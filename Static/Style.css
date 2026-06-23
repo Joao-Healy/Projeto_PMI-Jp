@@ -154,7 +154,7 @@ body::before {
 }
 
 /* ─── BUTTONS ─────────────────────────────── */
-button {
+button, .btn {
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -172,7 +172,7 @@ button {
   box-shadow: 0 0 0 1px rgba(59,130,246,0.4), 0 8px 32px rgba(37,99,235,0.35);
 }
 
-button::after {
+button::after, .btn::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -180,12 +180,12 @@ button::after {
   pointer-events: none;
 }
 
-button:hover {
+button:hover, .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 0 1px rgba(59,130,246,0.6), 0 16px 48px rgba(37,99,235,0.45);
 }
 
-button:active { transform: translateY(0); }
+button:button:active, .btn:active { transform: translateY(0); }
 
 /* ─── SECTION BASE ────────────────────────── */
 section {
