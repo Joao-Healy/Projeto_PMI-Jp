@@ -8,14 +8,6 @@ O objetivo do **Sofui** é oferecer uma plataforma simples, intuitiva e centrali
 
 A proposta é reduzir a dispersão entre diferentes aplicativos e tornar a gestão da rotina mais fluida, organizada e eficiente.
 
-Com o aplicativo, é possível:
-
-- ✅ Criar e gerenciar tarefas diárias;
-- 🎯 Definir e acompanhar metas pessoais;
-- 💪 Registrar treinos realizados;
-- 🌱 Criar e monitorar hábitos;
-- 📈 Acompanhar o progresso de forma visual e contínua;
-- 🔄 Manter consistência e disciplina na rotina.
 
 ## ✨ Funcionalidades
 
