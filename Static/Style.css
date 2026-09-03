@@ -420,3 +420,119 @@ section .container::before {
 ::-webkit-scrollbar-track { background: var(--black); }
 ::-webkit-scrollbar-thumb { background: var(--ink-light); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
+
+/* =========================================================
+   LOGIN PAGE STYLES (Simple & Clean)
+   ========================================================= */
+
+/* Main page layout: centers the card vertically and horizontally */
+.login-page {
+    background-color: #0d1117; 
+    display: flex;
+    justify-content: center;   /* Horizontally center child elements */
+    align-items: center;       /* Vertically center child elements */
+    min-height: 100vh;         /* Full screen height */
+    margin: 0;
+}
+
+/* Form container card styling */
+.login-card {
+    background-color: #161b22; /* Darker grey box */
+    border: 1px solid #30363d; /* Subtle border */
+    border-radius: 8px;        /* Slightly rounded corners */
+    padding: 30px;
+    width: 100%;
+    max-width: 380px;          /* Maximum fixed width */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Subtle drop shadow */
+}
+
+/* Header section styles */
+.login-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Logo styling inside the header */
+.login-header .logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Main login heading */
+.login-header h1 {
+    font-size: 1.3rem;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+/* Subtitle text */
+.login-header p {
+    color: #8b949e;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Form structure styling */
+.zenith-form {
+    display: flex;
+    flex-direction: column; 
+
+/* Individual input container spacing */
+.input-field {
+    margin-bottom: 15px;
+}
+
+/* Label text above fields */
+.input-field label {
+    display: block;
+    font-size: 0.85rem;
+    color: #c9d1d9;
+    margin-bottom: 6px;
+}
+
+/* Form input fields */
+.input-field input {
+    width: 100%;
+    padding: 10px;
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    box-sizing: border-box; /* Includes padding in total width calculation */
+}
+
+/* Focus state when clicking inside inputs */
+.input-field input:focus {
+    border-color: #2563eb; /* Blue border on focus */
+    outline: none;
+}
+
+/* Full width button modifier */
+.btn-full {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Footer link section */
+.login-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: #8b949e;
+}
+
+/* Footer link styling */
+.login-footer a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+}
