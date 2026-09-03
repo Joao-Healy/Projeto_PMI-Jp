@@ -1,10 +1,10 @@
-# 📋 Sofui
+# 📋 Zenith
 
-O **Sofui** é uma aplicação desenvolvida para ajudar usuários a organizarem melhor sua rotina, reunindo em um só lugar o controle de tarefas, metas, treinos e hábitos diários.
+O **ZENITH** é uma aplicação desenvolvida para ajudar usuários a organizarem melhor sua rotina, reunindo em um só lugar o controle de tarefas, metas, treinos e hábitos diários.
 
 ## 🚀 Sobre o Projeto
 
-O objetivo do **Sofui** é oferecer uma plataforma simples, intuitiva e centralizada, onde o usuário pode registrar atividades importantes do dia a dia e acompanhar sua evolução ao longo do tempo.
+O objetivo do **ZENITH** é oferecer uma plataforma simples, intuitiva e centralizada, onde o usuário pode registrar atividades importantes do dia a dia e acompanhar sua evolução ao longo do tempo.
 
 A proposta é reduzir a dispersão entre diferentes aplicativos e tornar a gestão da rotina mais fluida, organizada e eficiente.
 
