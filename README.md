@@ -30,6 +30,7 @@ Visualize seu progresso e mantenha o foco nos seus objetivos.
 
 - HTML5
 - CSS3
+- Boostrap
 
 ### Instalação
 git clone https://github.com/Joao-Healy/Projeto_PMI-Jp
