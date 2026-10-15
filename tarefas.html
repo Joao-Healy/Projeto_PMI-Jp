@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Zenith - Minhas Tarefas</title>
+
+    <link rel="stylesheet" href="Static/Style.css">
+</head>
+
+<body>
+
+    <main class="tarefas-container">
+
+        <h1>Zenith</h1>
+
+        <p class="subtitulo">
+            Organize suas tarefas e acompanhe seu progresso.
+        </p>
+
+        <section class="painel">
+
+            <h2>Adicionar tarefa</h2>
+
+            <form id="formulario">
+
+                <label for="nome">Nome da tarefa</label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Ex.: Estudar JavaScript"
+                    maxlength="100"
+                    required
+                >
+
+                <label for="categoria">Categoria</label>
+
+                <select id="categoria" required>
+                    <option value="">Selecione uma categoria</option>
+                    <option value="Estudos">Estudos</option>
+                    <option value="Trabalho">Trabalho</option>
+                    <option value="Treino">Treino</option>
+                    <option value="Pessoal">Pessoal</option>
+                </select>
+
+                <label for="data">Data de conclusão</label>
+
+                <input
+                    type="date"
+                    id="data"
+                    required
+                >
+
+                <button type="submit" class="adicionar">
+                    + Adicionar tarefa
+                </button>
+
+                <p id="mensagem" role="status"></p>
+
+            </form>
+
+        </section>
+
+        <section class="painel">
+
+            <h2>Minhas tarefas</h2>
+
+            <div class="filtros">
+
+                <button
+                    type="button"
+                    class="filtro ativo"
+                    data-filtro="todas"
+                >
+                    Todas
+                </button>
+
+                <button
+                    type="button"
+                    class="filtro"
+                    data-filtro="pendentes"
+                >
+                    Pendentes
+                </button>
+
+                <button
+                    type="button"
+                    class="filtro"
+                    data-filtro="concluidas"
+                >
+                    Concluídas
+                </button>
+
+            </div>
+
+            <div id="lista"></div>
+
+            <p id="contador">0 tarefas</p>
+
+            <button type="button" id="limpar" class="limpar">
+                Limpar concluídas
+            </button>
+
+        </section>
+
+    </main>
+
+    <script>
+        // Seleciona os elementos do HTML
+
+        const formulario = document.getElementById("formulario");
+        const nomeInput = document.getElementById("nome");
+        const categoriaInput = document.getElementById("categoria");
+        const dataInput = document.getElementById("data");
+        const lista = document.getElementById("lista");
+        const contador = document.getElementById("contador");
+        const mensagem = document.getElementById("mensagem");
+        const botaoLimpar = document.getElementById("limpar");
+
+        // Define a data mínima como hoje
+
+        const agora = new Date();
+
+        agora.setMinutes(
+            agora.getMinutes() - agora.getTimezoneOffset()
+        );
+
+        const hoje = agora.toISOString().split("T")[0];
+
+        dataInput.min = hoje;
+
+        // Recupera as tarefas salvas no navegador
+
+        let tarefas = [];
+
+        try {
+            const salvas = JSON.parse(
+                localStorage.getItem("zenith-tarefas") || "[]"
+            );
+
+            if (Array.isArray(salvas)) {
+                tarefas = salvas.filter(tarefa =>
+                    tarefa &&
+                    typeof tarefa.id === "string" &&
+                    typeof tarefa.nome === "string" &&
+                    typeof tarefa.categoria === "string" &&
+                    typeof tarefa.data === "string" &&
+                    typeof tarefa.concluida === "boolean"
+                );
+            }
+        } catch (erro) {
+            tarefas = [];
+        }
+
+        let filtroAtual = "todas";
+
+        // Salva as tarefas no localStorage
+
+        function salvarTarefas() {
+            try {
+                localStorage.setItem(
+                    "zenith-tarefas",
+                    JSON.stringify(tarefas)
+                );
+
+                return true;
+
+            } catch (erro) {
+                mostrarMensagem(
+                    "Não foi possível salvar as tarefas.",
+                    true
+                );
+
+                return false;
+            }
+        }
+
+        // Exibe uma mensagem para o usuário
+
+        function mostrarMensagem(texto, erro = false) {
+            mensagem.textContent = texto;
+            mensagem.style.color = erro ? "#ff8b8b" : "#10b981";
+        }
+
+        // Formata a data para o padrão brasileiro
+
+        function formatarData(data) {
+            const partes = data.split("-");
+
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        // Mostra as tarefas na tela
+
+        function renderizarTarefas() {
+            lista.replaceChildren();
+
+            const tarefasVisiveis = tarefas.filter(tarefa => {
+                if (filtroAtual === "pendentes") {
+                    return !tarefa.concluida;
+                }
+
+                if (filtroAtual === "concluidas") {
+                    return tarefa.concluida;
+                }
+
+                return true;
+            });
+
+            if (tarefasVisiveis.length === 0) {
+                const vazio = document.createElement("p");
+
+                vazio.className = "vazio";
+
+                vazio.textContent = "Nenhuma tarefa encontrada.";
+
+                lista.appendChild(vazio);
+            }
+
+            tarefasVisiveis.forEach(tarefa => {
+                const item = document.createElement("div");
+
+                item.className = tarefa.concluida
+                    ? "tarefa concluida"
+                    : "tarefa";
+
+                // Checkbox para concluir a tarefa
+
+                const checkbox = document.createElement("input");
+
+                checkbox.type = "checkbox";
+                checkbox.checked = tarefa.concluida;
+                checkbox.setAttribute(
+                    "aria-label",
+                    "Marcar tarefa como concluída"
+                );
+
+                checkbox.addEventListener("change", () => {
+                    alternarConclusao(tarefa.id);
+                });
+
+                // Informações da tarefa
+
+                const informacoes = document.createElement("div");
+
+                informacoes.className = "informacoes";
+
+                const titulo = document.createElement("h3");
+
+                titulo.textContent = tarefa.nome;
+
+                const detalhes = document.createElement("p");
+
+                detalhes.textContent =
+                    tarefa.categoria +
+                    " | Prazo: " +
+                    formatarData(tarefa.data);
+
+                informacoes.append(titulo, detalhes);
+
+                // Botão para excluir
+
+                const excluir = document.createElement("button");
+
+                excluir.type = "button";
+                excluir.className = "excluir";
+                excluir.textContent = "Excluir";
+
+                excluir.addEventListener("click", () => {
+                    excluirTarefa(tarefa.id);
+                });
+
+                item.append(checkbox, informacoes, excluir);
+
+                lista.appendChild(item);
+            });
+
+            // Atualiza o contador
+
+            const pendentes = tarefas.filter(
+                tarefa => !tarefa.concluida
+            ).length;
+
+            contador.textContent =
+                tarefas.length + " tarefa(s) | " +
+                pendentes + " pendente(s)";
+        }
+
+        // Adiciona uma nova tarefa
+
+        formulario.addEventListener("submit", function(evento) {
+            evento.preventDefault();
+
+            const nome = nomeInput.value.trim();
+            const categoria = categoriaInput.value;
+            const data = dataInput.value;
+
+            if (!nome || !categoria || !data) {
+                mostrarMensagem(
+                    "Preencha todos os campos.",
+                    true
+                );
+
+                return;
+            }
+
+            if (data < hoje) {
+                mostrarMensagem(
+                    "Escolha hoje ou uma data futura.",
+                    true
+                );
+
+                return;
+            }
+
+            const novaTarefa = {
+                id: Date.now().toString() +
+                    Math.random().toString(16).slice(2),
+                nome: nome,
+                categoria: categoria,
+                data: data,
+                concluida: false
+            };
+
+            tarefas.unshift(novaTarefa);
+
+            salvarTarefas();
+
+            filtroAtual = "todas";
+
+            atualizarFiltros();
+
+            renderizarTarefas();
+
+            formulario.reset();
+
+            dataInput.min = hoje;
+
+            mostrarMensagem("Tarefa adicionada com sucesso!");
+
+            nomeInput.focus();
+        });
+
+        // Marca ou desmarca uma tarefa como concluída
+
+        function alternarConclusao(id) {
+            tarefas = tarefas.map(tarefa => {
+                if (tarefa.id === id) {
+                    return {
+                        ...tarefa,
+                        concluida: !tarefa.concluida
+                    };
+                }
+
+                return tarefa;
+            });
+
+            salvarTarefas();
+
+            renderizarTarefas();
+        }
+
+        // Exclui uma tarefa
+
+        function excluirTarefa(id) {
+            tarefas = tarefas.filter(
+                tarefa => tarefa.id !== id
+            );
+
+            salvarTarefas();
+
+            renderizarTarefas();
+
+            mostrarMensagem("Tarefa excluída.");
+        }
+
+        // Atualiza a aparência dos filtros
+
+        function atualizarFiltros() {
+            document.querySelectorAll("[data-filtro]").forEach(botao => {
+                const ativo = botao.dataset.filtro === filtroAtual;
+
+                botao.classList.toggle("ativo", ativo);
+
+                botao.setAttribute(
+                    "aria-pressed",
+                    String(ativo)
+                );
+            });
+        }
+
+        // Filtra as tarefas
+
+        document.querySelectorAll("[data-filtro]").forEach(botao => {
+            botao.addEventListener("click", function() {
+                filtroAtual = botao.dataset.filtro;
+
+                atualizarFiltros();
+
+                renderizarTarefas();
+            });
+        });
+
+        // Remove todas as tarefas concluídas
+
+        botaoLimpar.addEventListener("click", function() {
+            tarefas = tarefas.filter(
+                tarefa => !tarefa.concluida
+            );
+
+            salvarTarefas();
+
+            renderizarTarefas();
+
+            mostrarMensagem("Tarefas concluídas removidas.");
+        });
+
+        // Exibe as tarefas salvas ao abrir a página
+
+        renderizarTarefas();
+    </script>
+
+</body>
+</html>
