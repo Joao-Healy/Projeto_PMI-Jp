@@ -747,3 +747,33 @@ body.login-page::before {
         padding: 2rem 1.25rem;
     }
 }
+
+/* Sprint 3: componentes compartilhados, preservando a paleta Zenith. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; line-height: 1.6; }
+a { color: #8aa5ff; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 3px solid #8aa5ff; outline-offset: 4px; }
+button:disabled { cursor: wait; opacity: .65; }
+.app-header { padding: 1rem; border-bottom: 1px solid var(--z-border); }
+.app-header, .app-header nav { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.app-header { justify-content: space-between; }
+.app-header a { text-decoration: none; padding: .4rem; }
+.app-header a:hover, .app-header [aria-current] { color: var(--z-text); text-decoration: underline; }
+.indicadores { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.indicadores .painel { margin: 0; }
+.indicadores strong { display: block; font-size: 2rem; color: #8aa5ff; }
+progress { width: 100%; accent-color: var(--z-accent); }
+footer { text-align: center; padding-inline: 1rem; }
+.tarefas-container { width: 100%; }
+.tarefas-container .editar { background: var(--z-accent-dim); color: #b6c7ff; }
+.tarefas-container button:hover { filter: brightness(1.15); }
+.tarefas-container .tarefa { flex-wrap: wrap; }
+.tarefas-container .tarefa .informacoes { flex-basis: 50%; }
+.login-page { overflow-y: auto !important; overflow-x: clip !important; }
+.navbar-toggler-icon { filter: invert(1); }
+section[id] { scroll-margin-top: 6rem; }
+@media (min-width: 600px) { .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .app-header { padding-inline: max(1rem, calc((100% - 1100px) / 2)); } }
+@media (max-width: 380px) { .steps { grid-template-columns: 1fr; } .app-header nav { gap: .25rem; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
