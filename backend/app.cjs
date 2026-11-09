@@ -7,6 +7,7 @@ const { HttpError, errorHandler } = require('./errors.cjs');
 const { tasksRouter } = require('./tasks.cjs');
 const { habitsRouter } = require('./habits.cjs');
 const { dashboardRouter } = require('./dashboard.cjs');
+const { createAuth } = require('./auth.cjs');
 
 function createApp({ installRoutes = () => {}, allowedOrigins = origins, pool, authenticate } = {}) {
   const app = express();
@@ -28,8 +29,9 @@ function createApp({ installRoutes = () => {}, allowedOrigins = origins, pool, a
       try { await pool.query('SELECT 1'); res.json({ data: { status: 'ok', database: 'postgresql' } }); }
       catch { throw new HttpError(503, 'Banco indisponível.', 'DATABASE_UNAVAILABLE'); }
     });
-    // Até a etapa de login não existe acesso anônimo a dados pessoais.
-    const requireUser = authenticate || ((req, res, next) => next(new HttpError(401, 'Entre na sua conta.', 'UNAUTHENTICATED')));
+    const auth = createAuth(pool,allowedOrigins);
+    app.use('/api/auth',auth.router);
+    const requireUser = authenticate || auth.guard;
     app.use('/api/tarefas', requireUser, tasksRouter(pool));
     app.use('/api/habitos', requireUser, habitsRouter(pool));
     app.use('/api/dashboard', requireUser, dashboardRouter(pool));

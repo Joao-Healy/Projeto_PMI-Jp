@@ -17,7 +17,8 @@
     setTimeout(() => URL.revokeObjectURL(url),1000);
   });
   button.addEventListener('click', async () => {
-    if (!confirm('Importar as tarefas antigas para a conta conectada? IDs já importados nesta conta serão ignorados, mesmo se a tarefa foi excluída. A cópia local será mantida.')) return;
+    if(window.ZenithReady && !await window.ZenithReady) { message.textContent="Entre na sua conta antes de importar.";return; }
+    if (!confirm(`Importar para ${window.ZenithUser?.email || "a conta conectada"}? IDs já importados serão ignorados. A cópia local será mantida.`)) return;
     button.disabled = true; message.textContent = 'Importando…';
     try {
       let importadas=0, ignoradas=0;

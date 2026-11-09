@@ -7,7 +7,7 @@
   dia.value=hoje;dia.max=hoje;inicio.value=hoje;inicio.max=hoje;
   function lock(value){busy=value;lista.setAttribute('aria-busy',String(value));document.querySelectorAll('#habito-form input,#habito-form textarea,#habito-form button,#habito-lista button,#habito-dia').forEach(el=>el.disabled=value||!ready);inicio.disabled=value||!!editing||!ready;document.getElementById('habito-recarregar').disabled=value;}
   function cancel(){editing=null;form.reset();inicio.value=hoje;inicio.disabled=false;cancelar.hidden=true;form.querySelector('[type=submit]').textContent='Cadastrar hábito';}
-  async function read(){
+  async function read(){ if(window.ZenithReady && !await window.ZenithReady) throw new Error("Entre na sua conta para continuar.");
     const habits=await HabitosAPI.listar(dia.value);lista.replaceChildren();ready=true;
     if(!habits.length){const p=document.createElement('p');p.textContent='Nenhum hábito cadastrado.';lista.append(p);}
     for(const h of habits){

@@ -1,0 +1,47 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const request=require('supertest');
+const {createApp}=require('../backend/app.cjs');
+const {isolatedDatabase}=require('./db-helper.cjs');
+const {hashPassword,verifyPassword}=require('../backend/passwords.cjs');
+const origin='http://localhost:3002';
+test('scrypt: salts únicos e comparação segura',async()=>{
+  const a=await hashPassword('senha-forte-123'),b=await hashPassword('senha-forte-123');assert.notEqual(a,b);assert.equal(await verifyPassword('senha-forte-123',a),true);assert.equal(await verifyPassword('incorreta',a),false);assert.equal(await verifyPassword('teste','invalid'),false);
+});
+test('PostgreSQL + HTTP: cadastro, login, CSRF, sessões, logout e contas isoladas', {skip:!process.env.TEST_DATABASE_URL},async t=>{
+  const pool=await isolatedDatabase(t);const app=createApp({pool});
+  const a=request.agent(app),b=request.agent(app);
+  const user={nome:'Ana',email:'ana@example.com',senha:'senha-forte-123'};
+  await a.get('/api/auth/me').expect(401);
+  await a.post('/api/auth/register').send(user).expect(403);
+  const registered=await a.post('/api/auth/register').set('Origin',origin).send(user).expect(201);
+  const csrf=registered.body.data.csrf;
+  assert.ok(registered.headers['set-cookie'][0].includes('HttpOnly'));assert.ok(registered.headers['set-cookie'][0].includes('SameSite=Lax'));
+  assert.ok(!registered.text.includes(user.senha));assert.ok(!registered.text.includes('senha_hash'));
+  const stored=(await pool.query('SELECT senha_hash FROM usuarios')).rows[0].senha_hash;assert.ok(stored.startsWith('scrypt$'));assert.notEqual(stored,user.senha);
+  const session=(await a.get('/api/auth/me').expect(200)).body.data;assert.equal(session.usuario.email,user.email);
+  await a.post('/api/auth/register').set('Origin',origin).send(user).expect(409);
+  await a.post('/api/auth/login').set('Origin',origin).send({...user,senha:'errada-123456'}).expect(401);
+  await a.post('/api/auth/login').set('Origin',origin).send({...user,email:'naoexiste@example.com'}).expect(401);
+  await a.post('/api/auth/register').set('Origin',origin).send({...user,email:'bad@example.com',senha:'curta'}).expect(400);
+  const body={nome:'Privada',categoria:'Pessoal',data:'2099-01-01'};
+  await a.post('/api/tarefas').set('Origin',origin).send(body).expect(403);
+  await a.post('/api/tarefas').set('X-CSRF-Token',csrf).send(body).expect(403);
+  await a.post('/api/tarefas').set('Origin','https://evil.example').set('X-CSRF-Token',csrf).send(body).expect(403);
+  const task=(await a.post('/api/tarefas').set('Origin',origin).set('X-CSRF-Token',csrf).send({...body,usuario_id:'forged'}).expect(201)).body.data;
+  const regB=(await b.post('/api/auth/register').set('Origin',origin).send({nome:'B',email:'b@example.com',senha:user.senha}).expect(201)).body.data;
+  assert.equal((await b.get('/api/tarefas')).body.data.length,0);
+  await b.delete('/api/tarefas/'+task.id).set('Origin',origin).set('X-CSRF-Token',regB.csrf).expect(404);
+  const login=await a.post('/api/auth/login').set('Origin',origin).send({email:user.email,senha:user.senha}).expect(200);
+  const restored=request.agent(createApp({pool}));
+  await restored.get('/api/tarefas').set('Cookie',login.headers['set-cookie'][0].split(';')[0]).expect(200);
+  await a.post('/api/auth/logout').set('Origin',origin).set('X-CSRF-Token',login.body.data.csrf).expect(204);
+  await a.get('/api/tarefas').expect(401);
+  await restored.get('/api/tarefas').set('Cookie',login.headers['set-cookie'][0].split(';')[0]).expect(401);
+  await pool.query("UPDATE sessoes SET expira_em=now()-interval '1 second'");await b.get('/api/auth/me').expect(401);
+});
+test('HTTP: limite de tentativas de login',async()=>{
+  const app=createApp({pool:{query:async()=>({rows:[]})}});
+  for(let i=0;i<20;i++)await request(app).post('/api/auth/login').set('Origin',origin).send({email:'invalido',senha:'curta'}).expect(400);
+  const r=await request(app).post('/api/auth/login').set('Origin',origin).send({}).expect(429);assert.equal(r.body.error.code,'RATE_LIMIT');
+});

@@ -23,6 +23,8 @@ async function transaction(pool, work) {
   } finally { client.release(); }
 }
 async function migrate(pool) {
-  await pool.query(fs.readFileSync(path.join(__dirname, 'sql/01-schema.sql'), 'utf8'));
+  for (const file of ['01-schema.sql', '02-sessions.sql']) {
+    await pool.query(fs.readFileSync(path.join(__dirname, 'sql', file), 'utf8'));
+  }
 }
 module.exports = { createPool, transaction, migrate };

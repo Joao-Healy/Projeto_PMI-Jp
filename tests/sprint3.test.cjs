@@ -6,7 +6,7 @@ async function until(predicate){for(let i=0;i<100;i++){if(predicate())return;awa
 function abrir(page='tarefas.html',{legacy,fetch}={}){
  const errors=[];const console=new VirtualConsole();console.on('jsdomError',error=>errors.push(error));
  const dom=new JSDOM(fs.readFileSync(page,'utf8'),{url:'http://localhost:3002/'+page,runScripts:'outside-only',virtualConsole:console});
- const w=dom.window;w.confirm=()=>true;w.fetch=fetch||(async()=>new Response(JSON.stringify({data:[]}),{headers:{'Content-Type':'application/json'}}));w.AbortSignal=AbortSignal;
+ const w=dom.window;w.confirm=()=>true;w.fetch=(url,options)=>url==='/api/auth/me'?Promise.resolve(json({usuario:{id:'test',nome:'Conta teste',email:'teste@example.com'},csrf:'a'.repeat(64)})):(fetch?fetch(url,options):Promise.resolve(json([])));w.AbortSignal=AbortSignal;
  if(legacy!==undefined)w.localStorage.setItem('zenith-tarefas',legacy);
  w.eval([...w.document.querySelectorAll('script[src^="Static/"]')].map(el=>fs.readFileSync(el.getAttribute('src'),'utf8')).join('\n'));
  return {w,errors};
@@ -43,7 +43,7 @@ test('Fetch UI: erro HTTP, retry e validação sem sucesso falso',async()=>{
 test('Fetch UI: importação explícita, confirmação e preservação do JSON local',async()=>{
  const legacy=JSON.stringify([{...task,id:'antiga'}]);let imports=0;
  const {w}=abrir('tarefas.html',{legacy,fetch:async(url)=>{if(url.endsWith('/importar')){imports++;return json({importadas:1,ignoradas:0});}return json([]);}});
- w.confirm=()=>false;w.document.getElementById('importar').click();assert.equal(imports,0);
+ await until(()=>!w.document.querySelector('main').hidden);w.confirm=()=>false;w.document.getElementById('importar').click();await new Promise(r=>setTimeout(r,0));assert.equal(imports,0);
  w.confirm=()=>true;w.document.getElementById('importar').click();await until(()=>w.document.getElementById('migracao-mensagem').textContent.includes('concluída'));assert.equal(imports,1);assert.equal(w.localStorage.getItem('zenith-tarefas'),legacy);w.close();
 });
 test('dados locais corrompidos bloqueiam somente a importação',async()=>{const {w}=abrir('tarefas.html',{legacy:'{'});await until(()=>!w.document.getElementById('nome').disabled);assert.equal(w.document.getElementById('importar').disabled,true);assert.equal(w.localStorage.getItem('zenith-tarefas'),'{');w.close();});
@@ -64,4 +64,14 @@ test('Fetch UI: dashboard usa API e remove indicadores antigos quando há erro',
  let fail=false;const {w,errors}=abrir('dashboard.html',{fetch:async()=>fail?new Response(JSON.stringify({error:{message:'Servidor indisponível'}}),{status:503}):json({total:2,concluidas:1,pendentes:1,percentual:50,habitos:{total:1,realizados:1},recentes:[{nome:'<img src=x>',tipo:'tarefa',data:'2026-11-09T12:00:00Z'}]})});
  await until(()=>w.document.getElementById('percentual').textContent==='50%');assert.equal(w.document.querySelector('#recentes img'),null);
  fail=true;w.document.getElementById('dashboard-atualizar').click();await until(()=>w.document.getElementById('estado').textContent==='Servidor indisponível');assert.equal(w.document.getElementById('total').textContent,'—');assert.equal(errors.length,0);w.close();
+});
+
+test('Fetch UI: sessão fornece CSRF em memória e logout oculta dados',async()=>{
+ let headers;const {w}=abrir('tarefas.html',{fetch:async(url,options)=>{if(url==='/api/auth/logout'){headers=options.headers;return new Response(null,{status:204});}return json([]);}});
+ await until(()=>!w.document.querySelector('main').hidden);assert.match(w.document.getElementById('sessao-status').textContent,/teste@example.com/);w.document.getElementById('sair').click();await until(()=>w.document.querySelector('main').hidden);assert.equal(headers['X-CSRF-Token'],'a'.repeat(64));assert.equal(w.localStorage.length,0);w.close();
+});
+test('Fetch UI: login envia senha somente no corpo POST e mostra erro',async()=>{
+ let call;const {w,errors}=abrir('login.html',{fetch:async(url,options)=>{call={url,options};return new Response(JSON.stringify({error:{message:'Email ou senha incorretos.'}}),{status:401});}});
+ w.document.getElementById('login-email').value='teste@example.com';w.document.getElementById('login-senha').value='senha-invalida-123';w.document.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await until(()=>w.document.getElementById('login-status').textContent.includes('incorretos'));
+ assert.equal(call.url,'/api/auth/login');assert.equal(call.options.method,'POST');assert.equal(JSON.parse(call.options.body).senha,'senha-invalida-123');assert.equal(w.localStorage.length,0);assert.equal(errors.length,0);w.document.getElementById('alternar-cadastro').click();assert.equal(w.document.getElementById('login-nome').required,true);w.close();
 });

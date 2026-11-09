@@ -16,18 +16,22 @@
         </a>
 
         <div class="login-header">
-            <h1>Acesse sua conta</h1>
+            <h1 id="login-titulo">Acesse sua conta</h1>
             <p>Sua rotina de alta performance te espera.</p>
         </div>
 
-        <p role="note">Autenticação indisponível: o projeto ainda não possui back-end. Nenhuma credencial é solicitada ou enviada.</p>
-        <a href="tarefas.html" class="btn btn-accent btn-full">Continuar no modo local</a>
-
+        <form id="login-form" class="zenith-form">
+<div id="nome-campo" hidden><label for="login-nome">Nome</label><input id="login-nome" class="form-control" maxlength="100" autocomplete="name"></div>
+<label for="login-email">Email</label><input id="login-email" class="form-control" type="email" maxlength="254" autocomplete="username" required>
+<label for="login-senha">Senha (10 a 128 caracteres)</label><input id="login-senha" class="form-control" type="password" minlength="10" maxlength="128" autocomplete="current-password" required>
+<button type="submit" class="btn btn-accent btn-full">Entrar</button><p id="login-status" role="status"></p></form>
+<button type="button" id="alternar-cadastro" class="btn btn-outline-zenith btn-full">Criar uma conta</button>
         <div class="login-footer">
             <p class="mb-0">Conheça o projeto: <a href="index.html">Página inicial</a></p>
         </div>
-    </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="Static/js/api.js" defer></script><script src="Static/js/login.js" defer></script>
 </body>
 </html>

@@ -780,3 +780,7 @@ section[id] { scroll-margin-top: 6rem; }
 
 .tarefas-container textarea { width:100%; padding:12px; margin-bottom:18px; border:1px solid var(--z-border); background:var(--z-bg); color:var(--z-text); border-radius:6px; font:inherit; resize:vertical; }
 [hidden] { display:none !important; }
+
+.conta { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; color:var(--z-text-2); font-size:.85rem; }
+.conta button { padding:.5rem 1rem; background:var(--z-bg-2); color:var(--z-text); border:1px solid var(--z-border); border-radius:6px; cursor:pointer; }
+.zenith-form .form-control { margin-bottom:1rem; }

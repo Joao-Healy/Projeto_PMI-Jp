@@ -15,7 +15,7 @@ Base: `/api`, mesma origem do frontend (servido pelo Express). JSON: sucesso `{d
 
 Corpo POST/PUT: `{nome: string(1..100), categoria: Estudos|Trabalho|Treino|Pessoal, data: YYYY-MM-DD, concluida: boolean}`. Conclusão omitida equivale a false. Prazo novo deve ser hoje ou futuro (America/Sao_Paulo); PUT permite manter um prazo antigo inalterado. Resposta adiciona id, criado_em e atualizado_em. Identificador de outra conta responde 404.
 
-O acesso aos dados permanece fechado (401) até a implementação de sessões na etapa 7; testes internos injetam identidade exclusivamente na construção da aplicação de teste.
+Todos os endpoints de tarefas, hábitos, importação e dashboard exigem sessão. Identidade só é injetada diretamente nos testes isolados de recursos; a aplicação real usa cookies e autenticação PostgreSQL.
 
 ## Hábitos diários
 
@@ -35,3 +35,14 @@ Datas de realização devem estar entre início e hoje, no fuso America/Sao_Paul
 ## Dashboard
 
 `GET /dashboard`: total, concluidas, pendentes, percentual, habitos `{total,realizados}` de hoje e recentes `[{id,nome,tipo,data}]`. Uma consulta SQL garante snapshot consistente. Recentes contém a última atualização dos oito registros de tarefas/hábitos mais recentes, não uma trilha de auditoria de exclusões. Todos os cálculos são restritos à conta da sessão. Percentual sem tarefas: zero.
+
+## Autenticação
+
+- POST /auth/register: {nome,email,senha}, cria conta e sessão (201). Email único, normalizado em minúsculas.
+- POST /auth/login: {email,senha}, cria nova sessão (200).
+- GET /auth/me: conta atual e token CSRF (200 ou 401).
+- POST /auth/logout: revoga a sessão atual e apaga o cookie (204).
+
+Respostas de cadastro/login/me: {data:{usuario:{id,nome,email},csrf}}. Senhas têm 10 a 128 caracteres, hash scrypt (N=32768,r=8,p=3), salt aleatório de 16 bytes. Nenhum hash é retornado ao navegador. Sessões opacas de 256 bits, apenas SHA-256 do token persistido, expiram em sete dias. Cookie HttpOnly, SameSite=Lax, Secure e prefixo __Host- em produção. Cookie de desenvolvimento: zenith_session.
+
+Cadastro/login exigem Origin permitido e limitam 20 tentativas/15 minutos por IP, por instância. Escritas autenticadas exigem também X-CSRF-Token da sessão. O frontend mantém CSRF em memória e restaura a sessão com /auth/me. Não há credenciais em URL ou localStorage. Consulte README para HTTPS, CORS e implantação.

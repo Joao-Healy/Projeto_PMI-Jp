@@ -38,7 +38,7 @@
     document.querySelectorAll('[data-filtro]').forEach(b=>{b.classList.toggle('ativo',b.dataset.filtro===filtro);b.setAttribute('aria-pressed',String(b.dataset.filtro===filtro));});
     lock(busy);
   }
-  async function read() { tarefas=await TarefasAPI.listar();ready=true; if(editando&&!tarefas.some(t=>t.id===editando))cancel();render(); }
+  async function read() { if(window.ZenithReady && !await window.ZenithReady) throw new Error("Entre na sua conta para continuar."); tarefas=await TarefasAPI.listar();ready=true; if(editando&&!tarefas.some(t=>t.id===editando))cancel();render(); }
   async function load() {
     if(busy)return;lock(true);feedback('Carregando tarefas…');
     try {await read();feedback('Tarefas atualizadas do servidor.');}
