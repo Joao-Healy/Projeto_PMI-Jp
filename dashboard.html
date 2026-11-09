@@ -1,2 +1,55 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Zenith — Dashboard</title><link rel="stylesheet" href="Static/Style.css"></head><body><header class="app-header"><a href="index.html" class="wordmark">Zenith</a><nav aria-label="Principal"><a href="tarefas.html">Tarefas</a><a href="dashboard.html" aria-current="page">Dashboard</a><a href="habitos.html" >Hábitos</a></nav></header><main id="conteudo" class="tarefas-container"><h1>Dashboard</h1><p>Indicadores das tarefas reais deste navegador. Não há sincronização com servidor.</p><p id="estado" role="status">Carregando tarefas…</p><div class="indicadores"><section class="painel"><h2>Total</h2><strong id="total">—</strong></section><section class="painel"><h2>Concluídas</h2><strong id="concluidas">—</strong></section><section class="painel"><h2>Pendentes</h2><strong id="pendentes">—</strong></section><section class="painel"><h2>Progresso geral</h2><strong id="percentual">—</strong><progress id="progresso" max="100" value="0" aria-label="Progresso das tarefas"></progress></section></div><section class="painel"><h2>Tarefas cadastradas recentemente</h2><p>Ordem de cadastro local; o legado não registra histórico de alterações.</p><ul id="recentes"></ul></section></main><footer>Zenith — sua rotina otimizada</footer><script src="Static/js/dados.js" defer></script><script src="Static/js/dashboard.js" defer></script></body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenith — Dashboard</title>
+<link rel="stylesheet" href="Static/Style.css">
+</head>
+<body>
+<header class="app-header">
+<a href="index.html" class="wordmark">Zenith</a>
+<nav aria-label="Principal">
+<a href="tarefas.html">Tarefas</a>
+<a href="dashboard.html" aria-current="page">Dashboard</a>
+<a href="habitos.html" >Hábitos</a>
+</nav>
+</header>
+<main id="conteudo" class="tarefas-container">
+<h1>Dashboard</h1>
+<p>Indicadores das tarefas reais deste navegador. Não há sincronização com servidor.</p>
+<p id="estado" role="status">Carregando tarefas…</p>
+<div class="indicadores">
+<section class="painel">
+<h2>Total</h2>
+<strong id="total">—</strong>
+</section>
+<section class="painel">
+<h2>Concluídas</h2>
+<strong id="concluidas">—</strong>
+</section>
+<section class="painel">
+<h2>Pendentes</h2>
+<strong id="pendentes">—</strong>
+</section>
+<section class="painel">
+<h2>Progresso geral</h2>
+<strong id="percentual">—</strong>
+<progress id="progresso" max="100" value="0" aria-label="Progresso das tarefas">
+</progress>
+</section>
+</div>
+<section class="painel">
+<h2>Tarefas cadastradas recentemente</h2>
+<p>Ordem de cadastro local; o legado não registra histórico de alterações.</p>
+<ul id="recentes">
+</ul>
+</section>
+</main>
+<footer>Zenith — sua rotina otimizada</footer>
+<script src="Static/js/dados.js" defer>
+</script>
+<script src="Static/js/dashboard.js" defer>
+</script>
+</body>
+</html>

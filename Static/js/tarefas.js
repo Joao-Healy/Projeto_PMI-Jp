@@ -24,29 +24,15 @@
 
         let tarefas = [];
 
-        try {
-            const salvas = JSON.parse(
-                localStorage.getItem("zenith-tarefas") || "[]"
-            );
-
-            if (Array.isArray(salvas)) {
-                tarefas = salvas.filter(tarefa =>
-                    tarefa &&
-                    typeof tarefa.id === "string" &&
-                    typeof tarefa.nome === "string" &&
-                    typeof tarefa.categoria === "string" &&
-                    typeof tarefa.data === "string" &&
-                    typeof tarefa.concluida === "boolean"
-                );
-            }
-        } catch (erro) {
-            tarefas = [];
-        }
-
+        let armazenamentoDisponivel = true;
+        try { tarefas = lerTarefas(); }
+        catch (erro) { armazenamentoDisponivel = false; mostrarMensagem('Não foi possível ler os dados locais. Nenhum registro será sobrescrito. ' + erro.message, true); }
+        let editando = null;
         let filtroAtual = "todas";
 
 
-        function salvarTarefas() {
+        function salvarTarefas(anteriores) {
+            if (!armazenamentoDisponivel) { tarefas = anteriores; return false; }
             try {
                 localStorage.setItem(
                     "zenith-tarefas",
@@ -154,7 +140,16 @@
                     excluirTarefa(tarefa.id);
                 });
 
-                item.append(checkbox, informacoes, excluir);
+                const editar = document.createElement('button');
+                editar.type = 'button'; editar.className = 'editar'; editar.textContent = 'Editar';
+                editar.addEventListener('click', () => {
+                    editando = tarefa.id; nomeInput.value = tarefa.nome; categoriaInput.value = tarefa.categoria; dataInput.value = tarefa.data;
+                    dataInput.min = tarefa.data < hoje ? tarefa.data : hoje;
+                    formulario.querySelector('[type="submit"]').textContent = 'Salvar alterações';
+                    document.getElementById('cancelar').hidden = false;
+                    nomeInput.focus();
+                });
+                item.append(checkbox, informacoes, editar, excluir);
 
                 lista.appendChild(item);
             });
@@ -177,7 +172,7 @@
             const categoria = categoriaInput.value;
             const data = dataInput.value;
 
-            if (!nome || !categoria || !data) {
+            if (!nome || nome.length > 100 || !categoria || !data) {
                 mostrarMensagem(
                     "Preencha todos os campos.",
                     true
@@ -186,7 +181,7 @@
                 return;
             }
 
-            if (data < hoje) {
+            if (data < hoje && (!editando || tarefas.find(t => t.id === editando)?.data !== data)) {
                 mostrarMensagem(
                     "Escolha hoje ou uma data futura.",
                     true
@@ -204,10 +199,13 @@
                 concluida: false
             };
 
-            tarefas.unshift(novaTarefa);
+            const anteriores = tarefas;
+            tarefas = editando ? tarefas.map(t => t.id === editando ? {...t, nome, categoria, data} : t) : [novaTarefa, ...tarefas];
 
-            salvarTarefas();
+            if (!salvarTarefas(anteriores)) return;
+            if (editando && !tarefas.some(t => t.id === editando)) cancelarEdicao();
 
+            cancelarEdicao();
             filtroAtual = "todas";
 
             atualizarFiltros();
@@ -218,13 +216,14 @@
 
             dataInput.min = hoje;
 
-            mostrarMensagem("Tarefa adicionada com sucesso!");
+            mostrarMensagem("Tarefa salva neste navegador!");
 
             nomeInput.focus();
         });
 
 
         function alternarConclusao(id) {
+            const anteriores = tarefas;
             tarefas = tarefas.map(tarefa => {
                 if (tarefa.id === id) {
                     return {
@@ -236,17 +235,21 @@
                 return tarefa;
             });
 
-            salvarTarefas();
+            if (!salvarTarefas(anteriores)) return;
+            if (editando && !tarefas.some(t => t.id === editando)) cancelarEdicao();
 
             renderizarTarefas();
         }
 
         function excluirTarefa(id) {
+            if (!confirm("Excluir esta tarefa?")) return;
+            const anteriores = tarefas;
             tarefas = tarefas.filter(
                 tarefa => tarefa.id !== id
             );
 
-            salvarTarefas();
+            if (!salvarTarefas(anteriores)) return;
+            if (editando && !tarefas.some(t => t.id === editando)) cancelarEdicao();
 
             renderizarTarefas();
 
@@ -279,16 +282,29 @@
 
 
         botaoLimpar.addEventListener("click", function() {
+            if (!tarefas.some(t => t.concluida) || !confirm("Excluir todas as tarefas concluídas?")) return;
+            const anteriores = tarefas;
             tarefas = tarefas.filter(
                 tarefa => !tarefa.concluida
             );
 
-            salvarTarefas();
+            if (!salvarTarefas(anteriores)) return;
+            if (editando && !tarefas.some(t => t.id === editando)) cancelarEdicao();
 
             renderizarTarefas();
 
             mostrarMensagem("Tarefas concluídas removidas.");
         });
 
+        function cancelarEdicao() {
+            editando = null; formulario.reset(); dataInput.min = hoje;
+            formulario.querySelector('[type="submit"]').textContent = '+ Adicionar tarefa';
+            document.getElementById('cancelar').hidden = true;
+        }
+        document.getElementById('cancelar').addEventListener('click', cancelarEdicao);
+        if (!armazenamentoDisponivel) {
+            formulario.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+            botaoLimpar.disabled = true;
+        }
+        atualizarFiltros();
         renderizarTarefas();
-    
