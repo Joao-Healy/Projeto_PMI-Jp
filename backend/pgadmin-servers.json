@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Zenith local (exclusivo)",
+      "Group": "Zenith",
+      "Host": "127.0.0.1",
+      "Port": 55433,
+      "MaintenanceDB": "zenith_db",
+      "Username": "zenith_admin",
+      "SSLMode": "prefer"
+    }
+  }
+}
