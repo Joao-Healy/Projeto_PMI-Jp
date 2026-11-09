@@ -59,3 +59,9 @@ test('páginas têm main único, ids únicos, links e arquivos locais válidos',
  }
 });
 module.exports={abrir,until,json};
+
+test('Fetch UI: dashboard usa API e remove indicadores antigos quando há erro',async()=>{
+ let fail=false;const {w,errors}=abrir('dashboard.html',{fetch:async()=>fail?new Response(JSON.stringify({error:{message:'Servidor indisponível'}}),{status:503}):json({total:2,concluidas:1,pendentes:1,percentual:50,habitos:{total:1,realizados:1},recentes:[{nome:'<img src=x>',tipo:'tarefa',data:'2026-11-09T12:00:00Z'}]})});
+ await until(()=>w.document.getElementById('percentual').textContent==='50%');assert.equal(w.document.querySelector('#recentes img'),null);
+ fail=true;w.document.getElementById('dashboard-atualizar').click();await until(()=>w.document.getElementById('estado').textContent==='Servidor indisponível');assert.equal(w.document.getElementById('total').textContent,'—');assert.equal(errors.length,0);w.close();
+});

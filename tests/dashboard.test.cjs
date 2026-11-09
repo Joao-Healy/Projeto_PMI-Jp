@@ -1,0 +1,21 @@
+const { test }=require('node:test');
+const assert=require('node:assert/strict');
+const request=require('supertest');
+const {createApp}=require('../backend/app.cjs');
+const {isolatedDatabase}=require('./db-helper.cjs');
+const {today}=require('../backend/validation.cjs');
+test('PostgreSQL real: dashboard reflete CRUD, realizações e isolamento', {skip:!process.env.TEST_DATABASE_URL}, async t=>{
+  const pool=await isolatedDatabase(t);
+  const {rows}=await pool.query("INSERT INTO usuarios(nome,email,senha_hash) VALUES ('A','a@example.com','test'),('B','b@example.com','test') RETURNING id");
+  const [a,b]=rows.map(user=>request(createApp({pool,authenticate(req,res,next){req.user=user;next();}})));
+  const empty=(await a.get('/api/dashboard').expect(200)).body.data;assert.equal(empty.total,0);assert.equal(empty.percentual,0);assert.deepEqual(empty.recentes,[]);
+  const first=(await a.post('/api/tarefas').send({nome:'A',categoria:'Estudos',data:'2099-01-01',concluida:true})).body.data;
+  await a.post('/api/tarefas').send({nome:'B',categoria:'Estudos',data:'2099-01-01'}).expect(201);
+  const habit=(await a.post('/api/habitos').send({nome:'Ler'})).body.data;
+  await a.put('/api/habitos/'+habit.id+'/registros/'+today()).expect(204);
+  const result=(await a.get('/api/dashboard').expect(200)).body.data;
+  assert.equal(result.total,2);assert.equal(result.pendentes,1);assert.equal(result.percentual,50);assert.equal(result.habitos.realizados,1);assert.equal(result.recentes[0].tipo,'hábito');
+  assert.equal((await b.get('/api/dashboard')).body.data.total,0);
+  await a.delete('/api/tarefas/'+first.id).expect(204);
+  assert.equal((await a.get('/api/dashboard')).body.data.percentual,0);
+});

@@ -1,14 +1,24 @@
 'use strict';
-function atualizarDashboard() {
- try {
- const tarefas = lerTarefas(); const resumo = indicadores(tarefas);
- for (const [chave, valor] of Object.entries(resumo)) document.getElementById(chave).textContent = valor + (chave === 'percentual' ? '%' : '');
- document.getElementById('progresso').value = resumo.percentual;
- const lista = document.getElementById('recentes'); lista.replaceChildren();
- for (const tarefa of tarefas.slice(0, 5)) { const item = document.createElement('li'); item.textContent = tarefa.nome + (tarefa.concluida ? ' — Concluída' : ' — Pendente'); lista.append(item); }
- document.getElementById('estado').textContent = tarefas.length ? 'Dados locais atualizados.' : 'Nenhuma tarefa cadastrada neste navegador.';
- } catch (erro) { document.getElementById('estado').textContent = 'Não foi possível ler as tarefas: ' + erro.message; }
-}
-atualizarDashboard();
-window.addEventListener('storage', atualizarDashboard);
-window.addEventListener('pageshow', atualizarDashboard);
+(() => {
+  const status=document.getElementById('estado'),retry=document.getElementById('dashboard-atualizar');
+  let busy=false;
+  async function atualizarDashboard() {
+    if(busy)return;busy=true;retry.disabled=true;status.textContent='Carregando indicadores…';
+    document.getElementById('cards').setAttribute('aria-busy','true');
+    try {
+      const resumo=await ZenithAPI.request('/dashboard');
+      for(const chave of ['total','concluidas','pendentes','percentual'])document.getElementById(chave).textContent=resumo[chave]+(chave==='percentual'?'%':'');
+      document.getElementById('progresso').value=resumo.percentual;
+      document.getElementById('habitos-resumo').textContent=`${resumo.habitos.realizados} de ${resumo.habitos.total} hábito(s) realizados hoje.`;
+      const lista=document.getElementById('recentes');lista.replaceChildren();
+      for(const activity of resumo.recentes){const item=document.createElement('li');item.textContent=`${activity.tipo}: ${activity.nome} — ${new Date(activity.data).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`;lista.append(item);}
+      status.textContent=resumo.recentes.length?'Indicadores atualizados do servidor.':'Nenhuma tarefa ou hábito cadastrado. Comece pelas páginas de tarefas e hábitos.';
+    } catch(error) {
+      for(const chave of ['total','concluidas','pendentes','percentual'])document.getElementById(chave).textContent='—';
+      document.getElementById('progresso').value=0;document.getElementById('recentes').replaceChildren();document.getElementById('habitos-resumo').textContent='';status.textContent=error.message;
+    } finally{busy=false;retry.disabled=false;document.getElementById('cards').setAttribute('aria-busy','false');}
+  }
+  retry.addEventListener('click',atualizarDashboard);
+  window.addEventListener('pageshow',atualizarDashboard);
+  atualizarDashboard();
+})();

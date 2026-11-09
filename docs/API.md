@@ -31,3 +31,7 @@ Datas de realização devem estar entre início e hoje, no fuso America/Sao_Paul
 ## Migração do legado
 
 `POST /tarefas/importar`: `{tarefas:[{id,nome,categoria,data,concluida}]}`. De 1 a 500 itens por transação, validação integral antes de gravar, aceita prazos antigos. Resposta `{data:{importadas,ignoradas}}`. Chave única `(usuario_id,legado_id)` e ledger separado garantem repetição/concorrência sem duplicar, inclusive após exclusão da tarefa importada. IDs repetidos no mesmo lote são rejeitados. Registros já importados são ignorados; não sobrescrevem edições posteriores. A interface pede confirmação, oferece exportação JSON e mantém `zenith-tarefas` intacto. Mais de 500 itens são enviados em lotes; repetir após falha retoma os lotes faltantes. Se o legado foi criado em outra origem/porta, abra o backup na origem antiga; o navegador não permite ler localStorage de outro site.
+
+## Dashboard
+
+`GET /dashboard`: total, concluidas, pendentes, percentual, habitos `{total,realizados}` de hoje e recentes `[{id,nome,tipo,data}]`. Uma consulta SQL garante snapshot consistente. Recentes contém a última atualização dos oito registros de tarefas/hábitos mais recentes, não uma trilha de auditoria de exclusões. Todos os cálculos são restritos à conta da sessão. Percentual sem tarefas: zero.

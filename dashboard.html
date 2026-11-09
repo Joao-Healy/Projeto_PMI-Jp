@@ -17,9 +17,9 @@
 </header>
 <main id="conteudo" class="tarefas-container">
 <h1>Dashboard</h1>
-<p>Indicadores das tarefas reais deste navegador. Não há sincronização com servidor.</p>
+<p>Indicadores da sua conta, calculados com os dados reais do PostgreSQL.</p>
 <p id="estado" role="status">Carregando tarefas…</p>
-<div class="indicadores">
+<button type="button" id="dashboard-atualizar">Atualizar indicadores</button><p id="habitos-resumo"></p><div class="indicadores" id="cards">
 <section class="painel">
 <h2>Total</h2>
 <strong id="total">—</strong>
@@ -40,14 +40,14 @@
 </section>
 </div>
 <section class="painel">
-<h2>Tarefas cadastradas recentemente</h2>
-<p>Ordem de cadastro local; o legado não registra histórico de alterações.</p>
+<h2>Atualizações recentes</h2>
+<p>Última atualização de cada tarefa ou hábito, no horário de Brasília. Registros excluídos deixam de aparecer.</p>
 <ul id="recentes">
 </ul>
 </section>
 </main>
 <footer>Zenith — sua rotina otimizada</footer>
-<script src="Static/js/dados.js" defer>
+<script src="Static/js/api.js" defer>
 </script>
 <script src="Static/js/dashboard.js" defer>
 </script>
