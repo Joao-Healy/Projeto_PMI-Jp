@@ -17,19 +17,18 @@
 </header>
 <main id="conteudo" class="tarefas-container">
 <h1>Hábitos</h1>
-<section class="painel" aria-labelledby="aviso">
-<h2 id="aviso">Gerenciamento aguardando back-end</h2>
-<p>Cadastro, listagem, edição, exclusão e realizações diárias dependem de uma API que ainda não existe neste repositório.</p>
-<p>Nenhum hábito é gravado localmente nem enviado para um servidor.</p>
-<h3>O que falta para habilitar esta página</h3>
-<ul>
-<li>Contrato e rotas reais para consultar, criar, editar e excluir hábitos.</li>
-<li>Registro de realizações por data e frequência de cada hábito.</li>
-<li>Regras para calcular progresso, autenticação e tratamento de erros.</li>
-</ul>
-<a href="tarefas.html">Organizar minhas tarefas locais</a>
-</section>
+<p>Hábitos diários com histórico salvo na sua conta. <a href="login.html">Acessar conta</a></p>
+<section class="painel" aria-labelledby="habito-titulo"><h2 id="habito-titulo">Cadastrar ou editar hábito</h2>
+<form id="habito-form"><label for="habito-nome">Nome</label><input id="habito-nome" maxlength="100" required>
+<label for="habito-descricao">Descrição (opcional)</label><textarea id="habito-descricao" maxlength="500" rows="3"></textarea>
+<label for="habito-inicio">Início (mantido após cadastro)</label><input id="habito-inicio" type="date" required min="1900-01-01">
+<button type="submit" class="adicionar">Cadastrar hábito</button><button type="button" id="habito-cancelar" hidden>Cancelar edição</button></form></section>
+<section class="painel" aria-labelledby="historico"><h2 id="historico">Meus hábitos</h2>
+<p>Progresso: dias realizados divididos pelos dias desde o início até a data selecionada.</p>
+<label for="habito-dia">Dia para consultar ou registrar realização</label><input id="habito-dia" type="date" required min="1900-01-01">
+<button type="button" id="habito-recarregar">Atualizar lista</button><p id="habito-status" role="status"></p><div id="habito-lista"></div></section>
 </main>
 <footer>Zenith — sua rotina otimizada</footer>
+<script src="Static/js/api.js" defer></script><script src="Static/js/habitos-api.js" defer></script><script src="Static/js/habitos.js" defer></script>
 </body>
 </html>

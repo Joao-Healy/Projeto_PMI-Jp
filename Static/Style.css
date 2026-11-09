@@ -777,3 +777,6 @@ section[id] { scroll-margin-top: 6rem; }
 @media (min-width: 1000px) { .app-header { padding-inline: max(1rem, calc((100% - 1100px) / 2)); } }
 @media (max-width: 380px) { .steps { grid-template-columns: 1fr; } .app-header nav { gap: .25rem; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+
+.tarefas-container textarea { width:100%; padding:12px; margin-bottom:18px; border:1px solid var(--z-border); background:var(--z-bg); color:var(--z-text); border-radius:6px; font:inherit; resize:vertical; }
+[hidden] { display:none !important; }

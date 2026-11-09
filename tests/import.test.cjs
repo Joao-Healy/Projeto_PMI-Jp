@@ -1,0 +1,21 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const request = require('supertest');
+const { createApp } = require('../backend/app.cjs');
+const { isolatedDatabase } = require('./db-helper.cjs');
+test('PostgreSQL real: importação atômica, repetição concorrente e tombstone', {skip:!process.env.TEST_DATABASE_URL}, async t => {
+  const pool=await isolatedDatabase(t);
+  const user=(await pool.query("INSERT INTO usuarios(nome,email,senha_hash) VALUES ('A','a@example.com','test') RETURNING id")).rows[0];
+  const api=request(createApp({pool,authenticate(req,res,next){req.user=user;next();}}));
+  const legacy=[{id:'legacy-1',nome:'Antiga',categoria:'Estudos',data:'2020-01-01',concluida:true}];
+  const [a,b]=await Promise.all([api.post('/api/tarefas/importar').send({tarefas:legacy}).expect(200),api.post('/api/tarefas/importar').send({tarefas:legacy}).expect(200)]);
+  assert.equal(a.body.data.importadas+b.body.data.importadas,1);
+  assert.equal((await pool.query('SELECT count(*) FROM tarefas')).rows[0].count,'1');
+  const task=(await api.get('/api/tarefas')).body.data[0];
+  await api.delete('/api/tarefas/'+task.id).expect(204);
+  assert.equal((await api.post('/api/tarefas/importar').send({tarefas:legacy}).expect(200)).body.data.importadas,0);
+  const bad=[{...legacy[0],id:'new'}, {...legacy[0],id:'bad',data:'invalid'}];
+  await api.post('/api/tarefas/importar').send({tarefas:bad}).expect(400);
+  assert.equal((await pool.query('SELECT count(*) FROM tarefas')).rows[0].count,'0');
+  await api.post('/api/tarefas/importar').send({tarefas:[legacy[0],legacy[0]]}).expect(400);
+});
