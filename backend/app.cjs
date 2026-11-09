@@ -4,8 +4,9 @@ const helmet = require('helmet');
 const path = require('node:path');
 const { origins } = require('./config.cjs');
 const { HttpError, errorHandler } = require('./errors.cjs');
+const { tasksRouter } = require('./tasks.cjs');
 
-function createApp({ installRoutes = () => {}, allowedOrigins = origins } = {}) {
+function createApp({ installRoutes = () => {}, allowedOrigins = origins, pool, authenticate } = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet({ contentSecurityPolicy: { directives: {
@@ -20,6 +21,15 @@ function createApp({ installRoutes = () => {}, allowedOrigins = origins } = {}) 
   app.use(express.json({ limit: '256kb' }));
   app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.get('/api/health', (req, res) => res.json({ data: { status: 'ok' } }));
+  if (pool) {
+    app.get('/api/ready', async (req, res) => {
+      try { await pool.query('SELECT 1'); res.json({ data: { status: 'ok', database: 'postgresql' } }); }
+      catch { throw new HttpError(503, 'Banco indisponível.', 'DATABASE_UNAVAILABLE'); }
+    });
+    // Até a etapa de login não existe acesso anônimo a dados pessoais.
+    const requireUser = authenticate || ((req, res, next) => next(new HttpError(401, 'Entre na sua conta.', 'UNAUTHENTICATED')));
+    app.use('/api/tarefas', requireUser, tasksRouter(pool));
+  }
   installRoutes(app);
   app.use('/api', (req, res, next) => next(new HttpError(404, 'Rota não encontrada.', 'NOT_FOUND')));
   // Lista explícita: nunca expor .env, SQL, testes ou código do servidor.
