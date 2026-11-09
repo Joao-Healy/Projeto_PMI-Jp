@@ -5,6 +5,7 @@ const path = require('node:path');
 const { origins } = require('./config.cjs');
 const { HttpError, errorHandler } = require('./errors.cjs');
 const { tasksRouter } = require('./tasks.cjs');
+const { habitsRouter } = require('./habits.cjs');
 
 function createApp({ installRoutes = () => {}, allowedOrigins = origins, pool, authenticate } = {}) {
   const app = express();
@@ -29,6 +30,7 @@ function createApp({ installRoutes = () => {}, allowedOrigins = origins, pool, a
     // Até a etapa de login não existe acesso anônimo a dados pessoais.
     const requireUser = authenticate || ((req, res, next) => next(new HttpError(401, 'Entre na sua conta.', 'UNAUTHENTICATED')));
     app.use('/api/tarefas', requireUser, tasksRouter(pool));
+    app.use('/api/habitos', requireUser, habitsRouter(pool));
   }
   installRoutes(app);
   app.use('/api', (req, res, next) => next(new HttpError(404, 'Rota não encontrada.', 'NOT_FOUND')));
