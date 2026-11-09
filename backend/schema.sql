@@ -1,4 +1,4 @@
-BEGIN;
+-- Estrutura idempotente: cria apenas o que ainda não existe; não apaga registros.
 CREATE TABLE IF NOT EXISTS usuarios (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   nome varchar(100) NOT NULL CHECK (length(trim(nome)) > 0),
@@ -41,4 +41,13 @@ CREATE TABLE IF NOT EXISTS importacoes_tarefas (
   criado_em timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (usuario_id, legado_id)
 );
-COMMIT;
+
+CREATE TABLE IF NOT EXISTS sessoes (
+  token_hash char(64) PRIMARY KEY,
+  usuario_id uuid NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  csrf char(64) NOT NULL,
+  criado_em timestamptz NOT NULL DEFAULT now(),
+  expira_em timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessoes_usuario_idx ON sessoes(usuario_id);
+CREATE INDEX IF NOT EXISTS sessoes_expiracao_idx ON sessoes(expira_em);

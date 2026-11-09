@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { today } = require('./validation.cjs');
+const { today } = require('../validation.cjs');
 function dashboardRouter(pool) {
   const router = Router();
   router.get('/', async (req, res) => {

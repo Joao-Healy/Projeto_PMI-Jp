@@ -1,7 +1,7 @@
 const { Router } = require('express');
-const v = require('./validation.cjs');
-const { HttpError } = require('./errors.cjs');
-const { transaction } = require('./db.cjs');
+const v = require('../validation.cjs');
+const { HttpError } = require('../errors.cjs');
+const { transaction } = require('../db.cjs');
 function notFound() { throw new HttpError(404, 'Hábito não encontrado.', 'NOT_FOUND'); }
 function habitsRouter(pool) {
   const router = Router();

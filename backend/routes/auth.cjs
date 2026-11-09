@@ -1,11 +1,11 @@
 const { Router } = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { randomBytes, createHash, timingSafeEqual } = require('node:crypto');
-const { hashPassword, verifyPassword } = require('./passwords.cjs');
-const { HttpError } = require('./errors.cjs');
-const { transaction } = require('./db.cjs');
-const v = require('./validation.cjs');
-const { production } = require('./config.cjs');
+const { hashPassword, verifyPassword } = require('../passwords.cjs');
+const { HttpError } = require('../errors.cjs');
+const { transaction } = require('../db.cjs');
+const v = require('../validation.cjs');
+const { production } = require('../config.cjs');
 const COOKIE = production ? '__Host-zenith_session' : 'zenith_session';
 const cookieOptions = { httpOnly: true, secure: production, sameSite: 'lax', path: '/' };
 const digest = value => createHash('sha256').update(value).digest('hex');

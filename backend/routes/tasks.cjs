@@ -1,7 +1,7 @@
 const { Router } = require('express');
-const v = require('./validation.cjs');
-const { HttpError } = require('./errors.cjs');
-const { transaction } = require('./db.cjs');
+const v = require('../validation.cjs');
+const { HttpError } = require('../errors.cjs');
+const { transaction } = require('../db.cjs');
 function notFound() { throw new HttpError(404, 'Tarefa não encontrada.', 'NOT_FOUND'); }
 const columns = 'id, nome, categoria, data, concluida, criado_em, atualizado_em';
 function tasksRouter(pool) {

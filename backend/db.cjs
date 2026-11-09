@@ -2,7 +2,7 @@ require('./config.cjs');
 const { Pool, types } = require('pg');
 const fs = require('node:fs');
 const path = require('node:path');
-// DATE financeira/civil permanece YYYY-MM-DD sem conversão de fuso.
+// Datas civis permanecem YYYY-MM-DD sem conversão de fuso.
 types.setTypeParser(1082, value => value);
 function createPool(connectionString = process.env.DATABASE_URL) {
   if (!connectionString) throw new Error('Configure DATABASE_URL no .env.');
@@ -22,9 +22,8 @@ async function transaction(pool, work) {
     throw error;
   } finally { client.release(); }
 }
-async function migrate(pool) {
-  for (const file of ['01-schema.sql', '02-sessions.sql']) {
-    await pool.query(fs.readFileSync(path.join(__dirname, 'sql', file), 'utf8'));
-  }
+async function initializeDatabase(pool) {
+  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+  await transaction(pool, client => client.query(schema));
 }
-module.exports = { createPool, transaction, migrate };
+module.exports = { createPool, transaction, initializeDatabase };

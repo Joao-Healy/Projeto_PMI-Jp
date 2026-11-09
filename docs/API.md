@@ -15,7 +15,7 @@ Base: `/api`, mesma origem do frontend (servido pelo Express). JSON: sucesso `{d
 
 Corpo POST/PUT: `{nome: string(1..100), categoria: Estudos|Trabalho|Treino|Pessoal, data: YYYY-MM-DD, concluida: boolean}`. Conclusão omitida equivale a false. Prazo novo deve ser hoje ou futuro (America/Sao_Paulo); PUT permite manter um prazo antigo inalterado. Resposta adiciona id, criado_em e atualizado_em. Identificador de outra conta responde 404.
 
-Todos os endpoints de tarefas, hábitos, importação e dashboard exigem sessão. Identidade só é injetada diretamente nos testes isolados de recursos; a aplicação real usa cookies e autenticação PostgreSQL.
+Todos os endpoints de tarefas, hábitos, importação e dashboard exigem sessão. A API utiliza cookies e autenticação PostgreSQL; a identidade da conta não é aceita no corpo da requisição.
 
 ## Hábitos diários
 

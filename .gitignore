@@ -3,5 +3,4 @@ node_modules/
 .env.*
 !.env.example
 .postgres/
-coverage/
 *.log

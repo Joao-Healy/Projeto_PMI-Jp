@@ -7,8 +7,9 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Open Index.html",
-            "file": "/home/bruno/01/Projeto_PMI-Jp/Index.html"
+            "name": "Abrir Zenith (inicie npm run dev antes)",
+            "url": "http://127.0.0.1:3002",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }
