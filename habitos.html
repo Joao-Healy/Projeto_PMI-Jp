@@ -1,34 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zenith — Hábitos</title>
-<link rel="stylesheet" href="Static/Style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith — Hábitos</title>
+    <link rel="stylesheet" href="Static/Style.css">
 </head>
 <body>
-<header class="app-header">
-<a href="index.html" class="wordmark">Zenith</a>
-<nav aria-label="Principal">
-<a href="tarefas.html">Tarefas</a>
-<a href="dashboard.html" >Dashboard</a>
-<a href="habitos.html" aria-current="page">Hábitos</a>
-</nav><div class="conta"><span id="sessao-status" role="status">Verificando sessão…</span><a href="login.html" id="entrar">Entrar</a><button type="button" id="sair" hidden>Sair</button></div>
-</header>
-<main id="conteudo" class="tarefas-container">
-<h1>Hábitos</h1>
-<p>Hábitos diários com histórico salvo na sua conta. <a href="login.html">Acessar conta</a></p>
-<section class="painel" aria-labelledby="habito-titulo"><h2 id="habito-titulo">Cadastrar ou editar hábito</h2>
-<form id="habito-form"><label for="habito-nome">Nome</label><input id="habito-nome" maxlength="100" required>
-<label for="habito-descricao">Descrição (opcional)</label><textarea id="habito-descricao" maxlength="500" rows="3"></textarea>
-<label for="habito-inicio">Início (mantido após cadastro)</label><input id="habito-inicio" type="date" required min="1900-01-01">
-<button type="submit" class="adicionar">Cadastrar hábito</button><button type="button" id="habito-cancelar" hidden>Cancelar edição</button></form></section>
-<section class="painel" aria-labelledby="historico"><h2 id="historico">Meus hábitos</h2>
-<p>Progresso: dias realizados divididos pelos dias desde o início até a data selecionada.</p>
-<label for="habito-dia">Dia para consultar ou registrar realização</label><input id="habito-dia" type="date" required min="1900-01-01">
-<button type="button" id="habito-recarregar">Atualizar lista</button><p id="habito-status" role="status"></p><div id="habito-lista"></div></section>
-</main>
-<footer>Zenith — sua rotina otimizada</footer>
-<script src="Static/js/api.js" defer></script><script src="Static/js/sessao.js" defer></script><script src="Static/js/habitos-api.js" defer></script><script src="Static/js/habitos.js" defer></script>
+    <header class="app-header">
+        <a href="index.html" class="wordmark">Zenith</a>
+
+        <nav aria-label="Principal">
+            <a href="tarefas.html">Tarefas</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="habitos.html" aria-current="page">Hábitos</a>
+        </nav>
+
+        <div class="conta">
+            <span id="sessao-status" role="status">Modo demonstração</span>
+            <a href="login.html" id="entrar">Entrar</a>
+            <button type="button" id="sair" hidden>Sair</button>
+        </div>
+    </header>
+
+    <main id="conteudo" class="tarefas-container">
+        <h1>Hábitos</h1>
+
+        <section class="painel" aria-labelledby="habito-titulo">
+            <h2 id="habito-titulo">Cadastrar ou editar hábito</h2>
+
+            <form id="habito-form">
+                <label for="habito-nome">Nome</label>
+                <input id="habito-nome" maxlength="100" required>
+
+                <label for="habito-descricao">Descrição (opcional)</label>
+                <textarea id="habito-descricao" maxlength="500" rows="3"></textarea>
+
+                <label for="habito-inicio">Data de início</label>
+                <input id="habito-inicio" type="date" required>
+
+                <button type="submit" class="adicionar">Cadastrar hábito</button>
+                <button type="button" id="habito-cancelar" hidden>
+                    Cancelar edição
+                </button>
+            </form>
+        </section>
+
+        <section class="painel" aria-labelledby="historico">
+            <h2 id="historico">Meus hábitos</h2>
+
+            <p>
+                Progresso: dias realizados divididos pelos dias
+                desde o início até a data selecionada.
+            </p>
+
+            <label for="habito-dia">
+                Dia para consultar ou registrar realização
+            </label>
+            <input id="habito-dia" type="date" required min="1900-01-01">
+
+            <button type="button" id="habito-recarregar">
+                Atualizar lista
+            </button>
+
+            <p id="habito-status" role="status"></p>
+            <div id="habito-lista"></div>
+        </section>
+    </main>
+
+    <footer>Zenith — sua rotina otimizada</footer>
+
+    <script src="Static/js/api.js" defer></script>
+    <script src="Static/js/habitos-api.js" defer></script>
+    <script src="Static/js/habitos.js" defer></script>
 </body>
 </html>

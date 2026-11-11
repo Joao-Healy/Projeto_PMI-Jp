@@ -1,29 +1,53 @@
-require('./config.cjs');
+
 const { Pool, types } = require('pg');
-const fs = require('node:fs');
-const path = require('node:path');
-// Datas civis permanecem YYYY-MM-DD sem conversão de fuso.
+const fs = require('fs');
+const path = require('path');
+
+require('dotenv').config({
+    path: path.join(__dirname, '..', '.env')
+});
+
+// Mantém datas no formato YYYY-MM-DD
 types.setTypeParser(1082, value => value);
-function createPool(connectionString = process.env.DATABASE_URL) {
-  if (!connectionString) throw new Error('Configure DATABASE_URL no .env.');
-  const pool = new Pool({ connectionString, max: 10, connectionTimeoutMillis: 5000, idleTimeoutMillis: 10000 });
-  pool.on('error', () => console.error('Conexão PostgreSQL indisponível.'));
-  return pool;
+
+// Cria a conexão com PostgreSQL
+function createPool() {
+    return new Pool({
+        connectionString: process.env.DATABASE_URL
+    });
 }
-async function transaction(pool, work) {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const result = await work(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally { client.release(); }
+
+// Executa operações dentro de uma transação
+async function transaction(pool, callback) {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const resultado = await callback(client);
+
+        await client.query('COMMIT');
+        return resultado;
+    } catch (erro) {
+        await client.query('ROLLBACK');
+        throw erro;
+    } finally {
+        client.release();
+    }
 }
+
+// Cria as tabelas necessárias
 async function initializeDatabase(pool) {
-  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-  await transaction(pool, client => client.query(schema));
+    const sql = fs.readFileSync(
+        path.join(__dirname, 'schema.sql'),
+        'utf8'
+    );
+
+    await pool.query(sql);
 }
-module.exports = { createPool, transaction, initializeDatabase };
+
+module.exports = {
+    createPool,
+    transaction,
+    initializeDatabase
+};
