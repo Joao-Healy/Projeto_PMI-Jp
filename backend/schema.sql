@@ -51,3 +51,14 @@ CREATE TABLE IF NOT EXISTS sessoes (
 );
 CREATE INDEX IF NOT EXISTS sessoes_usuario_idx ON sessoes(usuario_id);
 CREATE INDEX IF NOT EXISTS sessoes_expiracao_idx ON sessoes(expira_em);
+
+
+
+-- Usuário utilizado apenas na apresentação do Zenith
+INSERT INTO usuarios (nome, email, senha_hash)
+VALUES (
+    'Usuário Demo',
+    'demo@zenith.local',
+    'conta-demonstrativa-sem-login'
+)
+ON CONFLICT (email) DO NOTHING;

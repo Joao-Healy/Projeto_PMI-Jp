@@ -1,25 +1,35 @@
-'use strict';
-(() => {
-  const form=document.getElementById('login-form'),message=document.getElementById('login-status'),toggle=document.getElementById('alternar-cadastro');
-  const name=document.getElementById('login-nome'),password=document.getElementById('login-senha');
-  let register=false;
-  toggle.addEventListener('click',()=>{
-    register=!register;document.getElementById('nome-campo').hidden=!register;name.required=register;
-    password.autocomplete=register?'new-password':'current-password';
-    form.querySelector('[type=submit]').textContent=register?'Criar conta':'Entrar';
-    document.getElementById('login-titulo').textContent=register?'Crie sua conta':'Acesse sua conta';
-    toggle.textContent=register?'Já tenho conta':'Criar uma conta';message.textContent='';
-  });
-  form.addEventListener('submit',async event=>{
-    event.preventDefault();if(!form.reportValidity())return;
-    const body={email:document.getElementById('login-email').value.trim(),senha:password.value};
-    if(register)body.nome=name.value.trim();
-    form.querySelectorAll('input,button').forEach(el=>el.disabled=true);toggle.disabled=true;message.textContent=register?'Criando conta…':'Entrando…';
-    try {
-      const result=await ZenithAPI.request('/auth/'+(register?'register':'login'),{method:'POST',body});
-      ZenithAPI.setCSRF(result.csrf);password.value='';message.textContent='Conta autenticada. Abrindo dashboard…';
-      window.location.assign('dashboard.html');
-    } catch(error){message.textContent=error.message;}
-    finally{form.querySelectorAll('input,button').forEach(el=>el.disabled=false);toggle.disabled=false;}
-  });
-})();
+
+const formulario = document.getElementById('login-form');
+const titulo = document.getElementById('login-titulo');
+const botaoCadastro = document.getElementById('alternar-cadastro');
+const campoNome = document.getElementById('nome-campo');
+const botaoEntrar = formulario.querySelector('button[type="submit"]');
+
+let cadastro = false;
+
+// Alternar entre login e cadastro
+botaoCadastro.addEventListener('click', () => {
+    cadastro = !cadastro;
+
+    campoNome.hidden = !cadastro;
+    titulo.textContent = cadastro ? 'Criar uma conta' : 'Acesse sua conta';
+
+    botaoEntrar.textContent = cadastro ? 'Cadastrar' : 'Entrar';
+    botaoCadastro.textContent = cadastro ? 'Já tenho uma conta' : 'Criar uma conta';
+
+    document.getElementById('login-nome').required = cadastro;
+});
+
+// Simular login ou cadastro
+formulario.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (cadastro) {
+        alert('Cadastro realizado com sucesso!');
+
+        botaoCadastro.click();
+        formulario.reset();
+    } else {
+        window.location.href = 'tarefas.html';
+    }
+});

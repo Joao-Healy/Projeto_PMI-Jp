@@ -1,27 +1,21 @@
 'use strict';
-window.ZenithAPI = (() => {
-  let csrf = null;
-  async function request(path, { method = 'GET', body } = {}) {
-    const headers = { Accept: 'application/json' };
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
-    if (csrf) headers['X-CSRF-Token'] = csrf;
-    let response;
+window.ZenithAPI = {
+  async request(rota, opcoes = {}) {
+    let resposta;
     try {
-      response = await fetch('/api' + path, {
-        method, headers, credentials: 'include', body: body === undefined ? undefined : JSON.stringify(body),
-        signal: AbortSignal.timeout(15000),
+      resposta = await fetch('/api' + rota, {
+        method: opcoes.method || 'GET',
+        headers: { Accept: 'application/json', ...(opcoes.body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+        body: opcoes.body === undefined ? undefined : JSON.stringify(opcoes.body)
       });
-    } catch { throw new Error('Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.'); }
-    if (response.status === 204) return null;
-    let result;
-    try { result = await response.json(); } catch { throw new Error('O servidor retornou uma resposta inválida.'); }
-    if (!response.ok) {
-      const error = new Error(result.error?.message || 'Não foi possível concluir a operação.');
-      error.status = response.status;
-      if (response.status === 401) { csrf = null; window.dispatchEvent(new Event('zenith:unauthorized')); }
-      throw error;
+    } catch {
+      throw new Error('Não foi possível conectar ao servidor.');
     }
-    return result.data;
-  }
-  return { request, setCSRF(value) { csrf = value; } };
-})();
+    if (resposta.status === 204) return null;
+    const resultado = await resposta.json().catch(() => null);
+    if (!resultado) throw new Error('Resposta inválida do servidor.');
+    if (!resposta.ok) throw new Error(resultado.error?.message || resultado.erro || 'Erro na API.');
+    return resultado.data;
+  },
+  setCSRF() {} // Compatibilidade com código legado
+};

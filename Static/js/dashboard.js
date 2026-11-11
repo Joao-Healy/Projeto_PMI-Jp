@@ -6,7 +6,6 @@
     if(busy)return;busy=true;retry.disabled=true;status.textContent='Carregando indicadores…';
     document.getElementById('cards').setAttribute('aria-busy','true');
     try {
-      if(window.ZenithReady && !await window.ZenithReady) throw new Error("Entre na sua conta para continuar.");
       const resumo=await ZenithAPI.request('/dashboard');
       for(const chave of ['total','concluidas','pendentes','percentual'])document.getElementById(chave).textContent=resumo[chave]+(chave==='percentual'?'%':'');
       document.getElementById('progresso').value=resumo.percentual;

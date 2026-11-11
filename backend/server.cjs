@@ -1,66 +1,139 @@
+
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const path = require('node:path');
+const path = require('path');
+const fs = require('fs');
+
 const { port, host, origins } = require('./config.cjs');
 const { createPool, initializeDatabase } = require('./db.cjs');
-const { HttpError, errorHandler } = require('./errors.cjs');
-const { createAuth } = require('./routes/auth.cjs');
+
 const { tasksRouter } = require('./routes/tasks.cjs');
 const { habitsRouter } = require('./routes/habits.cjs');
 const { dashboardRouter } = require('./routes/dashboard.cjs');
 
-async function start() {
-  const pool = createPool();
-  try {
-    // O banco já deve existir; as tabelas são criadas sem apagar dados.
-    await initializeDatabase(pool);
-    const app = express();
-    app.disable('x-powered-by');
-    app.use(helmet({ contentSecurityPolicy: { directives: {
-      defaultSrc: ["'self'"], scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://fonts.googleapis.com'],
-      fontSrc: ["'self'", 'https://fonts.gstatic.com'], connectSrc: ["'self'", ...origins],
-      upgradeInsecureRequests: null,
-    } } }));
-    app.use(cors({ credentials: true, origin(origin, callback) {
-      callback(origin && !origins.includes(origin) ? new HttpError(403, 'Origem não autorizada.', 'ORIGIN_DENIED') : null, true);
-    } }));
-    app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
-    app.use(express.json({ limit: '256kb' }));
-    app.get('/api/health', (req, res) => res.json({ data: { status: 'ok' } }));
-    app.get('/api/ready', async (req, res) => {
-      try { await pool.query('SELECT 1'); res.json({ data: { status: 'ok', database: 'postgresql' } }); }
-      catch { throw new HttpError(503, 'Banco indisponível.', 'DATABASE_UNAVAILABLE'); }
-    });
-    const auth = createAuth(pool, origins);
-    app.use('/api/auth', auth.router);
-    app.use('/api/tarefas', auth.guard, tasksRouter(pool));
-    app.use('/api/habitos', auth.guard, habitsRouter(pool));
-    app.use('/api/dashboard', auth.guard, dashboardRouter(pool));
-    app.use('/api', (req, res, next) => next(new HttpError(404, 'Rota não encontrada.', 'NOT_FOUND')));
+const { errorHandler } = require('./errors.cjs');
 
-    // Servir somente as páginas públicas e assets. .env e backend não são publicados.
-    const root = path.join(__dirname, '..');
-    for (const page of ['index.html', 'login.html', 'tarefas.html', 'dashboard.html', 'habitos.html']) {
-      app.get(page === 'index.html' ? ['/', '/index.html'] : `/${page}`, (req, res) => res.sendFile(page, { root, dotfiles: 'allow' }));
-    }
-    app.use('/Static', express.static(path.join(root, 'Static'), { dotfiles: 'deny' }));
-    app.use((req, res, next) => next(new HttpError(404, 'Página não encontrada.', 'NOT_FOUND')));
-    app.use(errorHandler);
+const app = express();
+const pool = createPool();
 
-    const server = app.listen(port, host, () => console.log(`Zenith: http://${host}:${port}`));
-    server.on('error', async () => {
-      console.error('Não foi possível iniciar o servidor. Verifique HOST e PORT.');
-      await pool.end(); process.exitCode = 1;
-    });
-    for (const signal of ['SIGINT', 'SIGTERM']) {
-      process.once(signal, () => server.close(async () => { await pool.end(); process.exit(0); }));
+// Configurações
+app.use(cors({ origin: origins }));
+app.use(express.json());
+
+// Usuário demonstrativo
+async function usuarioDemo(req, res, next) {
+    try {
+        const resultado = await pool.query(
+            'SELECT id FROM usuarios WHERE email = $1',
+            ['demo@zenith.local']
+        );
+
+        if (resultado.rows.length === 0) {
+            return res.status(500).json({
+                error: {
+                    code: 'DEMO_USER_NOT_FOUND',
+                    message: 'Usuário demonstrativo não encontrado.'
+                }
+            });
+        }
+
+        req.user = {
+            id: resultado.rows[0].id
+        };
+
+        next();
+    } catch (erro) {
+        next(erro);
     }
-  } catch (error) { await pool.end(); throw error; }
 }
 
-start().catch(() => {
-  console.error('Não foi possível iniciar o Zenith. Verifique DATABASE_URL no .env, o serviço PostgreSQL e as permissões de acesso/criação de tabelas.');
-  process.exitCode = 1;
+// API REST
+app.use('/api/tarefas', usuarioDemo, tasksRouter(pool));
+app.use('/api/habitos', usuarioDemo, habitsRouter(pool));
+app.use('/api/dashboard', usuarioDemo, dashboardRouter(pool));
+
+// Verificar servidor
+app.get('/api/health', (req, res) => {
+    res.json({
+        data: {
+            status: 'ok'
+        }
+    });
 });
+
+// FRONTEND
+const pastaPrincipal = path.resolve(__dirname, '..');
+
+// Arquivos CSS, JavaScript e imagens
+app.use('/Static', express.static(
+    path.join(pastaPrincipal, 'Static')
+));
+
+// Páginas HTML
+const paginas = [
+    'index.html',
+    'login.html',
+    'tarefas.html',
+    'habitos.html',
+    'dashboard.html'
+];
+
+paginas.forEach((pagina) => {
+    const rota = pagina === 'index.html'
+        ? '/'
+        : `/${pagina}`;
+
+    app.get(rota, (req, res, next) => {
+        const arquivo = path.join(pastaPrincipal, pagina);
+
+        if (!fs.existsSync(arquivo)) {
+            return res.status(404).send(
+                `Arquivo não encontrado: ${pagina}`
+            );
+        }
+fs.readFile(arquivo, 'utf8', (erro, html) => {
+    if (erro) {
+        console.error('Erro ao ler HTML:', erro);
+        return next(erro);
+    }
+
+    res.type('html').send(html);
+});
+    });
+});
+
+// Acesso direto ao index.html
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(pastaPrincipal, 'index.html'));
+});
+
+// Tratamento de erros
+app.use((erro, req, res, next) => {
+    console.error(
+        `Erro em ${req.method} ${req.originalUrl}:`,
+        erro
+    );
+
+    next(erro);
+});
+
+app.use(errorHandler);
+
+// Inicializar servidor
+async function iniciarServidor() {
+    try {
+        await initializeDatabase(pool);
+
+        app.listen(port, host, () => {
+            console.log(`Zenith: http://${host}:${port}`);
+            console.log('Pasta do frontend:', pastaPrincipal);
+        });
+
+    } catch (erro) {
+        console.error('Erro ao iniciar o Zenith:', erro);
+        await pool.end();
+        process.exitCode = 1;
+    }
+}
+
+iniciarServidor();

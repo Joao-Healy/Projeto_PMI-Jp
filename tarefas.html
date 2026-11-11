@@ -13,10 +13,10 @@
 
 <body>
 
-    <header class="app-header"><a href="index.html" class="wordmark">Zenith</a><nav aria-label="Principal"><a href="tarefas.html" aria-current="page">Tarefas</a><a href="dashboard.html">Dashboard</a><a href="habitos.html">Hábitos</a></nav><div class="conta"><span id="sessao-status" role="status">Verificando sessão…</span><a href="login.html" id="entrar">Entrar</a><button type="button" id="sair" hidden>Sair</button></div></header>
+    <header class="app-header"><a href="index.html" class="wordmark">Zenith</a><nav aria-label="Principal"><a href="tarefas.html" aria-current="page">Tarefas</a><a href="dashboard.html">Dashboard</a><a href="habitos.html">Hábitos</a></nav><div class="conta"><span id="sessao-status" role="status">Modo demonstração</span><a href="login.html" id="entrar">Entrar</a><button type="button" id="sair" hidden>Sair</button></div></header>
 <main id="conteudo" class="tarefas-container">
 
-        <h1>Minhas tarefas</h1><p role="note">Tarefas sincronizadas com sua conta no PostgreSQL. <a href="login.html">Acessar conta</a></p>
+        <h1>Minhas tarefas</h1><p role="note"></p>
 
         <p class="subtitulo">
             Organize suas tarefas e acompanhe seu progresso.
@@ -108,18 +108,14 @@
 
         </section>
 
-<section class="painel" id="migracao" hidden aria-labelledby="migracao-titulo">
-<h2 id="migracao-titulo">Tarefas antigas deste navegador</h2><p id="migracao-mensagem" role="status"></p>
-<p>A importação envia uma cópia para a conta conectada. Registros já importados não serão duplicados ou atualizados. A origem local será preservada.</p>
-<button type="button" id="exportar">Baixar backup JSON</button><button type="button" id="importar">Importar para minha conta</button>
-</section>
+
     </main><footer>Zenith — sua rotina otimizada</footer>
 
-    <script src="Static/js/api.js" defer></script><script src="Static/js/sessao.js" defer></script>
-<script src="Static/js/dados.js" defer></script>
+    <script src="Static/js/api.js" defer></script>
+
 <script src="Static/js/tarefas-api.js" defer></script>
 <script src="Static/js/tarefas.js" defer></script>
-<script src="Static/js/migracao.js" defer></script>
+
 
 </body>
 </html>
